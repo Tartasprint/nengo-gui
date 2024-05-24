@@ -482,7 +482,7 @@ class Page(object):
                 self.filename, allow_sim=True
             )
             handles_progress = (
-                "progress_bar" in inspect.getargspec(backend.Simulator.__init__).args
+                "progress_bar" in inspect.getfullargspec(backend.Simulator.__init__).args
             )
             # build the simulation
             try:
