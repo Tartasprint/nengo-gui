@@ -1,7 +1,27 @@
 #!/usr/bin/env python
-import imp
 import io
 import os
+import sys
+if sys.version_info < (3,3):
+    from imp import load_source
+elif sys.version_info < (3,6):
+    from importlib.machinery import SourceFileLoader
+    def load_source(name, pathname):
+        return SourceFileLoader(name, pathname).load_module()
+else:
+    # From https://docs.python.org/dev/whatsnew/3.12.html#imp
+    import importlib.util
+    import importlib.machinery
+
+    def load_source(modname, filename):
+        loader = importlib.machinery.SourceFileLoader(modname, filename)
+        spec = importlib.util.spec_from_file_location(modname, filename, loader=loader)
+        module = importlib.util.module_from_spec(spec)
+        # The module is always executed and not cached in sys.modules.
+        # Uncomment the following line to cache the module.
+        # sys.modules[module.__name__] = module
+        loader.exec_module(module)
+        return module
 
 try:
     from setuptools import find_packages, setup
@@ -24,7 +44,7 @@ def read(*filenames, **kwargs):
 
 
 root = os.path.dirname(os.path.realpath(__file__))
-version_module = imp.load_source(
+version_module = load_source(
     "version", os.path.join(root, "nengo_gui", "version.py")
 )
 
